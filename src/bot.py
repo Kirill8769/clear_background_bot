@@ -101,11 +101,14 @@ async def get_image(message: types.Message, bot: Bot) -> None:
     output_path = os.path.join(PATH_PROJECT, "output_imgs", f"out_{user_id}_{random_name}.png")
     img = await bot.get_file(message.photo[-1].file_id)
     await bot.download_file(img.file_path, input_path)
-    await remove_bg_image(input_path=input_path, output_path=output_path, user_model=user_model)
-    out_img = types.FSInputFile(output_path)
-    await bot.send_document(message.from_user.id, document=out_img)
+    result = await remove_bg_image(input_path=input_path, output_path=output_path, user_model=user_model)
+    if result:
+        out_img = types.FSInputFile(output_path)
+        await bot.send_document(message.from_user.id, document=out_img)
+        os.remove(output_path)
+    else:
+        await message.answer(text="Произошла ошибка при обработке файла, повторите попытку")
     os.remove(input_path)
-    os.remove(output_path)
 
 
 @dp.message()
