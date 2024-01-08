@@ -6,7 +6,7 @@ from rembg import new_session, remove
 from loggers import logger
 
 
-async def remove_bg_image(input_path: str, output_path: str, user_model: str = "u2net") -> bool:
+async def remove_bg_image(input_path: str, output_path: str, user_model: str = "u2net"):
     """
     Функция удаляет фон с изображений.
 
@@ -16,7 +16,6 @@ async def remove_bg_image(input_path: str, output_path: str, user_model: str = "
 
     :return: True, если изображение успешно обработано и False, в случае возникновения ошибки
     """
-    flag = False
     try:
         if not os.path.isfile(input_path):
             raise FileNotFoundError("Файл не найден")
@@ -24,11 +23,8 @@ async def remove_bg_image(input_path: str, output_path: str, user_model: str = "
         input_img = Image.open(input_path)
         output_img = remove(data=input_img, session=session)
         output_img.save(output_path)
-        flag = True
-        logger.error("[+] Успешно обработано изображение")
+        logger.info("[+] Успешно обработано изображение")
     except FileNotFoundError as val_ex:
         logger.error(f"{val_ex.__class__.__name__}: {val_ex}")
     except Exception as ex:
         logger.debug(f"{ex.__class__.__name__}: {ex}", exc_info=True)
-    finally:
-        return flag

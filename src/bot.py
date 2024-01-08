@@ -101,8 +101,8 @@ async def get_image(message: types.Message, bot: Bot) -> None:
     output_path = os.path.join(PATH_PROJECT, "output_imgs", f"out_{user_id}_{random_name}.png")
     img = await bot.get_file(message.photo[-1].file_id)
     await bot.download_file(img.file_path, input_path)
-    result = await remove_bg_image(input_path=input_path, output_path=output_path, user_model=user_model)
-    if result:
+    await remove_bg_image(input_path=input_path, output_path=output_path, user_model=user_model)
+    if os.path.isfile(output_path):
         out_img = types.FSInputFile(output_path)
         await bot.send_document(message.from_user.id, document=out_img)
         os.remove(output_path)
