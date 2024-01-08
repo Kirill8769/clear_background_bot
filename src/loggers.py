@@ -6,6 +6,11 @@ from config import PATH_PROJECT
 
 
 def my_logger() -> logging.Logger:
+    """
+    Функция для настройки и получения экземпляра логгера.
+
+    :return: Объект логгера с настроенным файловым обработчиком.
+    """
     try:
         file_logger = logging.getLogger("logger")
         file_logger.setLevel("DEBUG")

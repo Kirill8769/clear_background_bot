@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 import asyncpg
@@ -17,8 +18,9 @@ class RemDb:
         self.__database = os.getenv("DATABASE")
         self.__user = os.getenv("USERNAME")
         self.__password = os.getenv("PASSWORD")
+        asyncio.run(self.create_table())
 
-    async def connect(self):
+    async def connect(self) -> None:
         """
         Устанавливает соединение с базой данных.
         """
@@ -29,48 +31,38 @@ class RemDb:
         except Exception as ex:
             logger.error(f"{ex.__class__.__name__}: {ex}", exc_info=True)
 
-    async def create_table(self):
+    async def create_table(self) -> None:
         """
-        Создает таблицу memes в базе данных, если она не существует.
+        Создает таблицу user_info в базе данных, если она не существует.
         """
         await self.connect()
-        try:   
+        try:
             await self.connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS user_info (
-                                        id SERIAL PRIMARY KEY,
-                                        user_id TEXT,
-                                        user_name TEXT,
-                                        first_name TEXT,
-                                        last_name TEXT,
-                                        image_count INT,
-                                        model TEXT
-                )
-                                        """
-            )       
-        except Exception as ex:
-            logger.debug(f"{ex.__class__.__name__}: {ex}", exc_info=True)
-        finally:
-            await self.connection.close()
-
-    async def update_setting(self, model_name, user_id):
-        await self.connect()
-        try:
-            await self.connection.execute(
-                "UPDATE user_info SET model = $1 WHERE user_id = $2",
-                model_name,
-                user_id,
+                    id SERIAL PRIMARY KEY,
+                    user_id TEXT,
+                    user_name TEXT,
+                    first_name TEXT,
+                    last_name TEXT,
+                    image_count INT,
+                    model TEXT
+                )"""
             )
-            await self.connection.close()
         except Exception as ex:
             logger.debug(f"{ex.__class__.__name__}: {ex}", exc_info=True)
         finally:
             await self.connection.close()
 
-    async def new_user(self, data_user):
+    async def new_user(self, data_user) -> None:
+        """
+        Метод для добавления нового пользователя в базу данных.
+
+        :param data_user: Объект пользователя, полученный из сообщения.
+        """
         await self.connect()
         try:
-            user_id = str(data_user.id)        
+            user_id = str(data_user.id)
             duplicate = await self.connection.fetchrow("SELECT user_id FROM user_info WHERE user_id = $1", user_id)
             if duplicate is None:
                 await self.connection.execute(
@@ -85,12 +77,35 @@ class RemDb:
                     0,
                     "u2net",
                 )
+                logger.info(f"Зарегистрирован новый пользователь: {data_user.username}, {data_user.first_name}")
         except Exception as ex:
             logger.debug(f"{ex.__class__.__name__}: {ex}", exc_info=True)
         finally:
             await self.connection.close()
 
-    async def get_model(self, user_id: str):
+    async def update_model(self, model_name: str, user_id: str) -> None:
+        """
+        Метод для обновления модели пользователя в базе данных.
+
+        :param model_name: Новое имя модели пользователя.
+        :param user_id: Идентификатор пользователя.
+        """
+        await self.connect()
+        try:
+            await self.connection.execute("UPDATE user_info SET model = $1 WHERE user_id = $2", model_name, user_id)
+            await self.connection.close()
+        except Exception as ex:
+            logger.debug(f"{ex.__class__.__name__}: {ex}", exc_info=True)
+        finally:
+            await self.connection.close()
+
+    async def get_model(self, user_id: str) -> None:
+        """
+        Метод для получения текущей модели пользователя из базы данных.
+
+        :param user_id: Идентификатор пользователя.
+        :return: Имя текущей модели пользователя.
+        """
         await self.connect()
         try:
             result = await self.connection.fetchrow("SELECT model FROM user_info WHERE user_id = $1", user_id)
@@ -100,7 +115,13 @@ class RemDb:
         finally:
             await self.connection.close()
 
-    async def set_model(self, user_id: str, model: str):
+    async def set_model(self, user_id: str, model: str) -> None:
+        """
+        Метод для установки новой модели пользователя в базе данных.
+
+        :param user_id: Идентификатор пользователя.
+        :param model: Новая модель пользователя.
+        """
         await self.connect()
         try:
             await self.connection.execute("UPDATE user_info SET model = $1 WHERE user_id = $2", model, user_id)

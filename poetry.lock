@@ -1751,6 +1751,28 @@ slack = ["slack-sdk"]
 telegram = ["requests"]
 
 [[package]]
+name = "types-aiofiles"
+version = "23.2.0.20240106"
+description = "Typing stubs for aiofiles"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-aiofiles-23.2.0.20240106.tar.gz", hash = "sha256:ef4fa3072441c58beaadbd0d07ba18e89beff49c71648dd223e2ca861f3dac53"},
+    {file = "types_aiofiles-23.2.0.20240106-py3-none-any.whl", hash = "sha256:7324f9a9f7200c1f4986a9e40a42b548290f707b967709f30b280e99fdacbd99"},
+]
+
+[[package]]
+name = "types-pillow"
+version = "10.1.0.20240106"
+description = "Typing stubs for Pillow"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-Pillow-10.1.0.20240106.tar.gz", hash = "sha256:d2c2ed7ece6b0becb4daf150e2374c8f4d977fe6efec625ef952e262576190e7"},
+    {file = "types_Pillow-10.1.0.20240106-py3-none-any.whl", hash = "sha256:c04c68ace4a92af2e48904754750f1fcf2b1bc2ac7a75510cff11c3d7123dc92"},
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.9.0"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -1883,4 +1905,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "3.10.4"
-content-hash = "13b8c65204414973a794537a69ab6ac1a504360c0d51eee5b3c1e518be5734da"
+content-hash = "3d706f59346d51b371e2d31ac621dd72228e03af05a4e0387deded5ab8da2909"

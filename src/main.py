@@ -1,22 +1,21 @@
-import os
 import asyncio
+import os
 
 from aiogram import Bot
 from dotenv import load_dotenv
 
+from bot import dp
 from loggers import logger
-
-from bot import dp, start_db
 
 
 async def main() -> None:
     """
     Функция запускает бота
     """
-    logger.info("[+] Start bot")
+    logger.info("[+] Bot is started")
     bot = Bot(TOKEN)
-    await start_db()
     await dp.start_polling(bot)
+    logger.info("[+] Bot is stoped")
 
 
 if __name__ == "__main__":
