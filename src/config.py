@@ -4,6 +4,8 @@ PATH_PROJECT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 LIST_OF_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 
+TMP_ID_GROUPS = []
+
 INFO_MESSAGE = """
 <b>Я могу обрабатывать изображения в нескольких режимах:</b>
 

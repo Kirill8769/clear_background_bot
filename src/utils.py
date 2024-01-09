@@ -23,7 +23,6 @@ async def remove_bg_image(input_path: str, output_path: str, user_model: str = "
         input_img = Image.open(input_path)
         output_img = remove(data=input_img, session=session)
         output_img.save(output_path)
-        logger.info("[+] Успешно обработано изображение")
     except FileNotFoundError as val_ex:
         logger.error(f"{val_ex.__class__.__name__}: {val_ex}")
     except Exception as ex:

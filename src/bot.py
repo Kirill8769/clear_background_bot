@@ -4,9 +4,10 @@ from random import randint
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import CommandStart, Filter
 
-from config import INFO_MESSAGE, MODELS, PATH_PROJECT, START_MESSAGE
+from config import INFO_MESSAGE, MODELS, PATH_PROJECT, START_MESSAGE, TMP_ID_GROUPS
 from db import RemDb
 from keyboards import get_keyboard_settings, get_keyboard_start
+from loggers import logger
 from utils import remove_bg_image
 
 dp = Dispatcher()
@@ -93,22 +94,32 @@ async def get_image(message: types.Message, bot: Bot) -> None:
     :param message: Объект сообщения от пользователя с изображением.
     :param bot: Объект бота для взаимодействия с Telegram API.
     """
-    await message.answer("Обрабатываю ...")
-    user_id = str(message.from_user.id)
-    random_name = randint(1, 9999999)
-    user_model = await rem_db.get_model(user_id=user_id)
-    input_path = os.path.join(PATH_PROJECT, "input_imgs", f"{user_id}_{random_name}.png")
-    output_path = os.path.join(PATH_PROJECT, "output_imgs", f"out_{user_id}_{random_name}.png")
-    img = await bot.get_file(message.photo[-1].file_id)
-    await bot.download_file(img.file_path, input_path)
-    await remove_bg_image(input_path=input_path, output_path=output_path, user_model=user_model)
-    if os.path.isfile(output_path):
-        out_img = types.FSInputFile(output_path)
-        await bot.send_document(message.from_user.id, document=out_img)
-        os.remove(output_path)
+    group_id = message.media_group_id
+    if group_id is not None:
+        if group_id not in TMP_ID_GROUPS:
+            TMP_ID_GROUPS.append(group_id)
+            await message.answer("❗Я могу обработать только одно изображение за раз")
+        await message.delete()
     else:
-        await message.answer(text="Произошла ошибка при обработке файла, повторите попытку")
-    os.remove(input_path)
+        TMP_ID_GROUPS.clear()
+        await message.answer("Обрабатываю ...")
+        user_id = str(message.from_user.id)
+        random_name = randint(1, 9999999)
+        user_model = await rem_db.get_model(user_id=user_id)
+        input_path = os.path.join(PATH_PROJECT, "input_imgs", f"{user_id}_{random_name}.png")
+        output_path = os.path.join(PATH_PROJECT, "output_imgs", f"out_{user_id}_{random_name}.png")
+        img = await bot.get_file(message.photo[-1].file_id)
+        await bot.download_file(img.file_path, input_path)
+        await remove_bg_image(input_path=input_path, output_path=output_path, user_model=user_model)
+        if os.path.isfile(output_path):
+            out_img = types.FSInputFile(output_path)
+            await bot.send_document(message.from_user.id, document=out_img)
+            os.remove(output_path)
+            logger.info(f"[+] Успешно обработано изображение для [{user_id}:{message.from_user.username}]")
+        else:
+            await message.answer(text="Произошла ошибка при обработке файла, повторите попытку")
+            logger.error(f"[+] Ошибка обработки изображения у [{user_id}:{message.from_user.username}]")
+        os.remove(input_path)
 
 
 @dp.message()
@@ -119,3 +130,6 @@ async def other_message(message: types.Message) -> None:
     :param message: Объект сообщения от пользователя.
     """
     await message.delete()
+    find_user = await rem_db.get_model(str(message.from_user.id))
+    if not find_user:
+        await message.answer("Что-то пошло не так, введите /start , что бы обновить функционал")
